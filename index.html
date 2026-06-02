@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>جاسوس أونلاين +18 بالصوت</title>
+    <title>جاسوس أونلاين 🔞 - نظام رومات</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
@@ -14,100 +14,158 @@
 <body class="bg-zinc-950 text-white min-h-screen flex flex-col items-center justify-center p-4">
 
     <div class="bg-zinc-900 border-4 border-red-700 p-6 rounded-3xl w-full max-w-md shadow-2xl text-center">
-        <h1 class="text-3xl font-black text-red-600 mb-2">جاسوس أونلاين 🔞🎙️</h1>
-        <p class="text-xs text-zinc-500 mb-6">اللعبة قلبت سـف وقلة أدب.. شغل المايك واثبت وجودك</p>
+        <h1 class="text-3xl font-black text-red-600 mb-2">جاسوس أونلاين 🔞</h1>
+        <p class="text-xs text-zinc-500 mb-6">العاب في رومات سرية.. من غير مايك، الهبد ع الدور!</p>
 
-        <!-- شاشة الدخول -->
         <div id="login-box" class="space-y-4">
             <input type="text" id="username" placeholder="اسمك المستعار يا شبح" class="w-full p-3 bg-zinc-800 border border-zinc-700 rounded-xl text-center font-bold text-white focus:outline-none focus:border-red-500">
-            <button onclick="join()" class="w-full bg-red-600 font-black py-3 rounded-xl hover:bg-red-700 transition">ادخل الغرزة 🚪</button>
+            
+            <div class="border-t border-zinc-800 my-2"></div>
+            
+            <button onclick="createRoom()" class="w-full bg-red-600 font-black py-3 rounded-xl hover:bg-red-700 transition">أنشئ روم جديدة 🏠</button>
+            
+            <div class="flex items-center my-2 text-zinc-500 text-xs justify-center gap-2">
+                <span>أو</span>
+            </div>
+
+            <div class="flex gap-2">
+                <input type="number" id="room-code-input" placeholder="كود الروم (5 أرقام)" class="w-2/3 p-3 bg-zinc-800 border border-zinc-700 rounded-xl text-center font-bold text-white focus:outline-none focus:border-red-500">
+                <button onclick="joinRoom()" class="w-1/3 bg-zinc-700 font-bold py-3 rounded-xl hover:bg-zinc-600 transition">دخول 🚪</button>
+            </div>
         </div>
 
-        <!-- شاشة اللعب -->
         <div id="game-box" class="hidden space-y-6">
+            
+            <div class="bg-zinc-950 p-3 rounded-xl border border-zinc-800 flex justify-between items-center">
+                <span class="text-sm text-zinc-400">كود الروم السري:</span>
+                <span id="display-room-code" class="text-xl font-black text-green-500 tracking-widest">-----</span>
+            </div>
+
+            <div class="bg-zinc-800 p-3 rounded-xl text-right">
+                <p class="text-xs text-zinc-400 mb-2 font-bold">العصابة اللي في الروم:</p>
+                <ul id="players-list" class="text-sm space-y-1 font-semibold text-zinc-300">
+                    </ul>
+            </div>
+
             <div class="bg-zinc-800 p-4 rounded-xl border border-zinc-700">
                 <p class="text-xs text-yellow-500 font-bold">كرتك السري (اوعى حد يشوفه):</p>
-                <h2 id="my-card" class="text-xl font-black mt-2 text-red-500">جاري التوزيع...</h2>
+                <h2 id="my-card" class="text-xl font-black mt-2 text-red-500">انتظر الليدر يبدأ الجيم...</h2>
             </div>
 
-            <!-- مؤشر المايك والدور -->
             <div class="p-4 bg-zinc-800 rounded-xl border-2 border-zinc-700">
-                <p class="text-sm text-zinc-400">مين اللي عليه الدور يلطش؟</p>
-                <h3 id="current-speaker" class="text-2xl font-black text-yellow-400 mt-1">انتظر بدء اللعبة...</h3>
-                
-                <!-- زرار المايك -->
-                <div class="flex justify-center my-4">
-                    <button id="mic-btn" class="bg-zinc-700 text-white font-bold p-4 rounded-full w-20 h-20 flex items-center justify-center opacity-40 cursor-not-allowed transition text-3xl" disabled>
-                        🎙️
-                    </button>
-                </div>
-                <p id="mic-text" class="text-xs text-zinc-500 mt-2">المايك مقفول.. مش دورك يا قفش</p>
+                <p class="text-sm text-zinc-400">مين اللي عليه الدور يتكلم/يسأل؟</p>
+                <h3 id="current-speaker" class="text-2xl font-black text-yellow-400 mt-1">لم تبدأ بعد..</h3>
+                <p id="turn-status-text" class="text-xs text-zinc-500 mt-2">مستنيين الليدر يدوس بنزين</p>
             </div>
 
-            <button id="done-btn" onclick="endMyTurn()" class="w-full bg-yellow-600 hover:bg-yellow-700 font-bold py-3 rounded-xl hidden transition">خلصت هري.. انقل للي بعدي ⏭️</button>
-            <button onclick="startAdminGame()" id="start-btn" class="w-full bg-green-600 hover:bg-green-700 font-black py-3 rounded-xl hidden transition">إبدأ الجيم (للأدمن) 🚀</button>
+            <button id="done-btn" onclick="endMyTurn()" class="w-full bg-yellow-600 hover:bg-yellow-700 font-black py-3 rounded-xl hidden transition">خلصت كلام.. انقل للي بعدي ⏭️</button>
+            <button id="start-btn" onclick="startAdminGame()" class="w-full bg-green-600 hover:bg-green-700 font-black py-3 rounded-xl hidden transition">إبدأ الجيم (لـ ليدر الروم) 🚀</button>
         </div>
     </div>
 
     <script>
-        // ملحوظة: غير 'http://localhost:3000' برابط السيرفر الأونلاين بتاعك لما ترفعه على Render
-        const socket = io('http://spy-game-production-f57a.up.railway.app'); 
+        // غير الرابط ده لرابط سيرفر الـ Render بتاعك لما ترفع أونلاين
+        const socket = io('http://localhost:3000'); 
         let myId = "";
-        let localStream;
-
-        function join() {
-            const name = document.getElementById('username').value;
-            if(!name) return alert('اكتب اسمك متبقاش بـق!');
-            socket.emit('joinGame', name);
-            document.getElementById('login-box').classList.add('hidden');
-            document.getElementById('game-box').classList.remove('hidden');
-            
-            // طلب إذن المايك من المتصفح
-            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-                localStream = stream;
-            }).catch(err => alert('لازم توافق على المايك عشان تعرف تتكلم يا برنس'));
-        }
+        let currentRoomCode = "";
 
         socket.on('connect', () => { myId = socket.id; });
-        
-        socket.on('updatePlayers', (players) => {
-            if(players[0] && players[0].id === myId) {
-                document.getElementById('start-btn').classList.remove('hidden');
-            }
-        });
 
+        function getPlayerName() {
+            const name = document.getElementById('username').value.trim();
+            if(!name) { alert('اكتب اسمك الأول متبقاش بـق!'); return null; }
+            return name;
+        }
+
+        // إنشاء الروم
+        function createRoom() {
+            const name = getPlayerName();
+            if(!name) return;
+            socket.emit('createRoom', name);
+        }
+
+        // الانضمام للروم
+        function joinRoom() {
+            const name = getPlayerName();
+            if(!name) return;
+            const code = document.getElementById('room-code-input').value.trim();
+            if(!code) return alert('اكتب كود الروم الأول يا شبح!');
+            socket.emit('joinRoom', { roomCode: code, playerName: name });
+        }
+
+        // استجابة السيرفر بعد الإنشاء أو الدخول
+        socket.on('roomCreated', (data) => { handleRoomEntry(data); });
+        socket.on('roomJoined', (data) => { handleRoomEntry(data); });
+
+        function handleRoomEntry(data) {
+            currentRoomCode = data.roomCode;
+            document.getElementById('display-room-code').innerText = currentRoomCode;
+            document.getElementById('login-box').classList.add('hidden');
+            document.getElementById('game-box').classList.remove('hidden');
+            updatePlayersUI(data.players);
+        }
+
+        // تحديث قائمة اللاعبين وتحديد مين الليدر بالأيقونة 👑
+        socket.on('updatePlayers', (players) => { updatePlayersUI(players); });
+
+        function updatePlayersUI(players) {
+            const list = document.getElementById('players-list');
+            list.innerHTML = "";
+            
+            let amILeader = false;
+
+            players.forEach(p => {
+                const li = document.createElement('li');
+                li.innerText = `${p.isLeader ? '👑 ' : '👤 '}${p.name} ${p.id === myId ? '(أنت)' : ''}`;
+                list.appendChild(li);
+
+                if(p.id === myId && p.isLeader) {
+                    amILeader = true;
+                }
+            });
+
+            // لو أنا الليدر والجيم مطلعش كروت لسة، يظهر زرار البدء
+            const myCardText = document.getElementById('my-card').innerText;
+            if (amILeader && (myCardText === "انتظر الليدر يبدأ الجيم..." || myCardText === "جاري التوزيع...")) {
+                document.getElementById('start-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('start-btn').classList.add('hidden');
+            }
+        }
+
+        // بدء الجيم وتوزيع الكروت
         socket.on('gameStarted', (data) => {
             document.getElementById('my-card').innerText = data.word;
             document.getElementById('start-btn').classList.add('hidden');
         });
 
+        // تحويل الدور بين اللاعبين
         socket.on('nextSpeaker', (speaker) => {
             document.getElementById('current-speaker').innerText = `🗣️ ${speaker.name}`;
-            const micBtn = document.getElementById('mic-btn');
-            const micText = document.getElementById('mic-text');
+            const statusText = document.getElementById('turn-status-text');
             const doneBtn = document.getElementById('done-btn');
 
             if(speaker.id === myId) {
-                micBtn.classList.replace('bg-zinc-700', 'bg-red-600');
-                micBtn.classList.remove('opacity-40', 'cursor-not-allowed');
-                micBtn.disabled = false;
-                micText.innerText = "🚨 مايكك مفتوح.. اهبد سؤالك يا غالي وثبتهم!";
+                statusText.innerText = "🚨 دورك جه.. اسأل سؤال ذكي عشان تلمح للمكان أو تكشف الجاسوس!";
+                statusText.classList.replace('text-zinc-500', 'text-red-400');
                 doneBtn.classList.remove('hidden');
-                if(localStream) localStream.getAudioTracks()[0].enabled = true;
             } else {
-                micBtn.classList.replace('bg-red-600', 'bg-zinc-700');
-                micBtn.classList.add('opacity-40', 'cursor-not-allowed');
-                micBtn.disabled = true;
-                micText.innerText = "اشش.. اسمع المغفل ده بيقول إيه";
+                statusText.innerText = "اشش.. اسمع الدور عليه بيقول إيه وفكر في هبدته.";
+                statusText.classList.replace('text-red-400', 'text-zinc-500');
                 doneBtn.classList.add('hidden');
-                if(localStream) localStream.getAudioTracks()[0].enabled = false;
             }
         });
 
-        socket.on('error', (msg) => { alert(msg); });
+        // رسائل الخطأ من السيرفر
+        socket.on('errorMsg', (msg) => { alert(msg); });
 
-        function startAdminGame() { socket.emit('startGame'); }
-        function endMyTurn() { socket.emit('turnDone'); }
+        function startAdminGame() { 
+            if(currentRoomCode) socket.emit('startGame', currentRoomCode); 
+        }
+        
+        function endMyTurn() { 
+            if(currentRoomCode) socket.emit('turnDone', currentRoomCode); 
+        }
     </script>
 </body>
 </html>
