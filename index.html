@@ -3,130 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>جاسوس أونلاين - نظام الغرف</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <title>لعبة من الجاسوس</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-        body { font-family: 'Cairo', sans-serif; }
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f4f4f4; padding: 20px; }
+        .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
+        button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
     </style>
 </head>
-<body class="bg-zinc-950 text-white min-h-screen flex flex-col items-center justify-center p-4">
-
-    <div class="bg-zinc-900 border-4 border-red-700 p-6 rounded-3xl w-full max-w-md shadow-2xl text-center">
-        <h1 class="text-3xl font-black text-red-600 mb-2">جاسوس أونلاين 🕵️‍♂️🔥</h1>
-        <p class="text-xs text-zinc-500 mb-6">نظام الغرف السرية بالأكواد</p>
-
-        <!-- 1. شاشة تسجيل الاسم واختيار (عمل روم أو دخول) -->
-        <div id="login-box" class="space-y-4">
-            <input type="text" id="username" placeholder="اسمك المستعار يا شبح" class="w-full p-3 bg-zinc-800 border border-zinc-700 rounded-xl text-center font-bold text-white focus:outline-none focus:border-red-500">
-            
-            <div class="grid grid-cols-2 gap-2">
-                <button onclick="createRoom()" class="bg-red-600 font-black py-3 rounded-xl hover:bg-red-700 transition">أنشئ غرفة جديدة 🆕</button>
-                <button onclick="showJoinInput()" class="bg-zinc-700 font-black py-3 rounded-xl hover:bg-zinc-600 transition">دخول بكود 🔑</button>
-            </div>
-
-            <!-- خانة الكود المخفية مش بتظهر إلا لو داس دخول بكود -->
-            <div id="code-input-box" class="hidden space-y-2 pt-2 border-t border-zinc-800">
-                <input type="number" id="room-code" placeholder="اكتب الـ 4 أرقام هنا" class="w-full p-3 bg-zinc-800 border border-zinc-700 rounded-xl text-center font-bold text-yellow-500 tracking-widest text-xl focus:outline-none focus:border-yellow-500">
-                <button onclick="joinRoom()" class="w-full bg-yellow-600 font-black py-3 rounded-xl hover:bg-yellow-700 transition">انضم للروم الآن 🚪</button>
-            </div>
-        </div>
-
-        <!-- 2. شاشة الانتظار واللعب -->
-        <div id="game-box" class="hidden space-y-6">
-            <div class="bg-zinc-800 p-4 rounded-xl border border-zinc-700">
-                <p class="text-sm text-zinc-400">كود الغرفة بتاعكم (ابعته لأصحابك):</p>
-                <h2 id="display-code" class="text-3xl font-black text-yellow-400 tracking-wider my-1">----</h2>
-            </div>
-
-            <div class="bg-zinc-800 p-4 rounded-xl border border-zinc-700 text-right">
-                <p class="text-xs text-zinc-500 mb-2">اللاعبين الموجودين في الغرفة:</p>
-                <ul id="player-list" class="list-disc list-inside space-y-1 font-bold text-sm">
-                    <!-- الأسامي هتنزل هنا تلقائي -->
-                </ul>
-            </div>
-
-            <div class="bg-zinc-800 p-4 rounded-xl border-2 border-dashed border-red-600">
-                <p class="text-xs text-zinc-400">كرتك السري:</p>
-                <h3 id="my-card" class="text-xl font-black mt-1 text-red-500">مستنيين الأدمن يبدأ...</h3>
-            </div>
-
-            <button onclick="startAdminGame()" id="start-btn" class="w-full bg-green-600 hover:bg-green-700 font-black py-3 rounded-xl hidden transition">إبدأ الجيم (للأدمن فقط) 🚀</button>
-        </div>
+<body>
+    <div class="container">
+        <h1>لعبة من الجاسوس</h1>
+        <input type="text" id="username" placeholder="أدخل اسمك">
+        <input type="text" id="roomcode" placeholder="أدخل كود الغرفة">
+        <button id="create">إنشاء غرفة</button>
+        <button id="join">انضمام إلى غرفة</button>
     </div>
-
-    <script>
-        // تذكر تحط رابط الـ Railway بتاعك هنا وتسيب الـ https:// زي ما هي! 👇
-        const socket = io('https://spy-game-production-f57a.up.railway.app'); 
-        let currentRoomCode = "";
-
-        function showJoinInput() {
-            document.getElementById('code-input-box').classList.remove('hidden');
-        }
-
-        // إنشاء غرفة جديدة
-        function createRoom() {
-            const name = document.getElementById('username').value;
-            if(!name) return alert('اكتب اسمك الأول يا بطل!');
-            socket.emit('createRoom', { name });
-        }
-
-        // دخول غرفة بكود
-        function joinRoom() {
-            const name = document.getElementById('username').value;
-            const roomCode = document.getElementById('room-code').value;
-            if(!name || !roomCode) return alert('اكتب اسمك واكتب الكود صح!');
-            currentRoomCode = roomCode;
-            socket.emit('joinRoom', { name, roomCode });
-        }
-
-        // لما السيرفر يأكد إنشاء الغرفة
-        socket.on('roomCreated', (data) => {
-            currentRoomCode = data.roomCode;
-            document.getElementById('login-box').classList.add('hidden');
-            document.getElementById('game-box').classList.remove('hidden');
-            document.getElementById('display-code').innerText = data.roomCode;
-            
-            // لأنك اللي عملت الروم فأنت الأدمن والزرار يظهرلك
-            document.getElementById('start-btn').classList.remove('hidden');
-            updatePlayerList(data.players, socket.id);
-        });
-
-        // تحديث قائمة الأسامي لما حد يدخل أو يخرج
-        socket.on('updatePlayers', (data) => {
-            document.getElementById('login-box').classList.add('hidden');
-            document.getElementById('game-box').classList.remove('hidden');
-            document.getElementById('display-code').innerText = currentRoomCode;
-            
-            // لو أنت الأدمن الحالي، زرار البدء يظهرلك
-            if(socket.id === data.adminId) {
-                document.getElementById('start-btn').classList.remove('hidden');
-            } else {
-                document.getElementById('start-btn').classList.add('hidden');
-            }
-            updatePlayerList(data.players, data.adminId);
-        });
-
-        function updatePlayerList(players, adminId) {
-            const list = document.getElementById('player-list');
-            list.innerHTML = "";
-            players.forEach(p => {
-                const isAdmin = p.id === adminId ? "👑 (الأدمن)" : "";
-                list.innerHTML += `<li class="text-zinc-200">${p.name} <span class="text-yellow-500 text-xs">${isAdmin}</span></li>`;
-            });
-        }
-
-        function startAdminGame() {
-            socket.emit('startGame', currentRoomCode);
-        }
-
-        socket.on('gameStarted', (data) => {
-            document.getElementById('my-card').innerText = data.word;
-            document.getElementById('start-btn').classList.add('hidden');
-        });
-
-        socket.on('errorMsg', (msg) => { alert(msg); });
-    </script>
 </body>
 </html>
