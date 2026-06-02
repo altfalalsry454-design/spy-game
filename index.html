@@ -3,22 +3,307 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة من الجاسوس</title>
+    <title>لعبة الجاسوس - Spy Game</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background-color: #f4f4f4; padding: 20px; }
-        .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
-        button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        button:hover { background-color: #0056b3; }
+        :root {
+            --bg-color: #121214;
+            --card-bg: #1a1a1e;
+            --primary: #ff4757;
+            --secondary: #2ed573;
+            --text: #ffffff;
+            --text-muted: #a4b0be;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+            border: 1px solid #2f3542;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 71, 87, 0.3);
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+        }
+
+        .btn-secondary {
+            background: #57606f;
+        }
+        .btn-secondary:hover {
+            box-shadow: 0 5px 15px rgba(87, 96, 111, 0.4);
+        }
+
+        .btn-success {
+            background: var(--secondary);
+        }
+        .btn-success:hover {
+            box-shadow: 0 5px 15px rgba(46, 213, 115, 0.4);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            box-sizing: border-box;
+            background: #2f3542;
+            border: 2px solid #57606f;
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .room-code-display {
+            font-size: 2rem;
+            font-weight: bold;
+            letter-spacing: 5px;
+            color: var(--secondary);
+            margin: 15px 0;
+            padding: 10px;
+            background: #2f3542;
+            border-radius: 10px;
+            display: inline-block;
+            width: 80%;
+        }
+
+        .card {
+            background: #2f3542;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 1.5rem;
+            margin: 20px 0;
+            border: 2px dashed var(--primary);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .blur {
+            filter: blur(8px);
+            background: #3f4656;
+        }
+
+        .player-badge {
+            display: inline-block;
+            background: #57606f;
+            padding: 5px 15px;
+            margin: 5px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>لعبة من الجاسوس</h1>
-        <input type="text" id="username" placeholder="أدخل اسمك">
-        <input type="text" id="roomcode" placeholder="أدخل كود الغرفة">
-        <button id="create">إنشاء غرفة</button>
-        <button id="join">انضمام إلى غرفة</button>
+
+<div class="container">
+    <h1>🕵️‍♂️ الجاسوس</h1>
+    <p class="subtitle">مين فينا اللي مش فاهم حاجة؟</p>
+
+    <!-- الشاشة الرئيسية -->
+    <div id="mainScreen" class="screen active">
+        <button class="btn" onclick="showScreen('createRoomScreen')">إنشاء غرفة جديدة</button>
+        <button class="btn btn-secondary" onclick="showScreen('joinRoomScreen')">دخول برقم الكود</button>
     </div>
+
+    <!-- شاشة إنشاء غرفة -->
+    <div id="createRoomScreen" class="screen">
+        <h3>إعدادات الغرفة</h3>
+        <label>عدد اللاعبين:</label>
+        <select id="playerCount">
+            <option value="3">3 لاعبين</option>
+            <option value="4" selected>4 لاعبين</option>
+            <option value="5">5 لاعبين</option>
+            <option value="6">6 لاعبين</option>
+            <option value="7">7 لاعبين</option>
+            <option value="8">8 لاعبين</option>
+        </select>
+        <button class="btn btn-success" onclick="generateRoom()">توليد كود الغرفة</button>
+        <button class="btn btn-secondary" onclick="showScreen('mainScreen')">رجوع</button>
+    </div>
+
+    <!-- شاشة كود الغرفة والانتظار -->
+    <div id="roomWaitingScreen" class="screen">
+        <h3>كود الغرفة الخاص بك:</h3>
+        <div class="room-code-display" id="generatedCode">XXXX</div>
+        <p style="color: var(--text-muted)">شارك الكود مع أصحابك للدخول في نفس اللعبة</p>
+        <button class="btn btn-success" onclick="startGame()">ابدأ اللعبة الآن 🚀</button>
+        <button class="btn btn-secondary" onclick="showScreen('mainScreen')">إلغاء</button>
+    </div>
+
+    <!-- شاشة الانضمام برقم الكود -->
+    <div id="joinRoomScreen" class="screen">
+        <h3>أدخل كود الغرفة</h3>
+        <input type="text" id="roomCodeInput" placeholder="مثال: 5492" maxlength="4">
+        <button class="btn btn-success" onclick="joinRoom()">دخول</button>
+        <button class="btn btn-secondary" onclick="showScreen('mainScreen')">رجوع</button>
+    </div>
+
+    <!-- شاشة اللعب وتوزيع الأدوار -->
+    <div id="gameScreen" class="screen">
+        <h3 id="playerTurnTitle">دور اللاعب رقم (1)</h3>
+        <p style="color: var(--text-muted)">اضغط على الكارت لإظهار الكلمة أو إخفائها سرياً!</p>
+        
+        <div id="wordCard" class="card blur" onclick="toggleCard()">
+            اضغط لإظهار الكلمة 🔒
+        </div>
+
+        <button class="btn btn-success" id="nextPlayerBtn" onclick="nextPlayerRole()">اللاعب التالي ➡️</button>
+    </div>
+</div>
+
+<script>
+    // قائمة الكلمات المضحكة والمتنوعة
+    const funnyWords = [
+        "بدلة رقص", "شماعة هدوم", "حمام عمومي", "حلة محشي", "صرصار طاير", 
+        "شبشب طائر", "كشك سجاير", "صالون حلاقة", "تكتك في السريع", "منور السلم", 
+        "مروحة سقف", "سلك مواعين", "مقلة لب", "عربة كبدوكي", "شراب مخروم", 
+        "فرشة أسنان", "ميكروباص خط المرج", "كوز ذرة", "مخدة ريش", "مغسلة عربيات"
+    ];
+
+    let gameState = {
+        totalPlayers: 0,
+        spyIndex: 0,
+        currentWord: "",
+        currentPlayer: 1
+    };
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function generateRoom() {
+        const count = document.getElementById('playerCount').value;
+        gameState.totalPlayers = parseInt(count);
+        
+        // توليد كود عشوائي من 4 أرقام
+        const randomCode = Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('generatedCode').innerText = randomCode;
+        
+        showScreen('roomWaitingScreen');
+    }
+
+    function joinRoom() {
+        const code = document.getElementById('roomCodeInput').value;
+        if(code.trim().length === 4) {
+            // محاكاة دخول بنفس الإعدادات السريعة
+            gameState.totalPlayers = 4; // افتراضي
+            startGame();
+        } else {
+            alert("برجاء إدخال كود صحيح مكون من 4 أرقام!");
+        }
+    }
+
+    function startGame() {
+        if(gameState.totalPlayers === 0) gameState.totalPlayers = 4;
+        
+        // اختيار الجاسوس عشوائياً
+        gameState.spyIndex = Math.floor(Math.random() * gameState.totalPlayers) + 1;
+        
+        // اختيار كلمة عشوائية
+        const randomIndex = Math.floor(Math.random() * funnyWords.length);
+        gameState.currentWord = funnyWords[randomIndex];
+        
+        // إعادة ضبط اللاعب الحالي
+        gameState.currentPlayer = 1;
+        
+        setupPlayerTurn();
+        showScreen('gameScreen');
+    }
+
+    function setupPlayerTurn() {
+        document.getElementById('playerTurnTitle').innerText = `دور اللاعب رقم (${gameState.currentPlayer})`;
+        const card = document.getElementById('wordCard');
+        card.classList.add('blur');
+        card.innerText = "اضغط لإظهار الكلمة 🔒";
+        
+        if (gameState.currentPlayer === gameState.totalPlayers) {
+            document.getElementById('nextPlayerBtn').innerText = "ابدأ النقاش والمؤامرة! 🕵️‍♂️";
+        } else {
+            document.getElementById('nextPlayerBtn').innerText = "اللاعب التالي ➡️";
+        }
+    }
+
+    function toggleCard() {
+        const card = document.getElementById('wordCard');
+        if (card.classList.contains('blur')) {
+            card.classList.remove('blur');
+            // تحديد إذا كان اللاعب هو الجاسوس أم لا
+            if (gameState.currentPlayer === gameState.spyIndex) {
+                card.innerText = "🕵️‍♂️ أنت الجاسوس! (حاول متتفقسش)";
+            } else {
+                card.innerText = `الكلمة السريّة: 【 ${gameState.currentWord} 】`;
+            }
+        } else {
+            card.classList.add('blur');
+            card.innerText = "اضغط لإظهار الكلمة 🔒";
+        }
+    }
+
+    function nextPlayerRole() {
+        if (gameState.currentPlayer < gameState.totalPlayers) {
+            gameState.currentPlayer++;
+            setupPlayerTurn();
+        } else {
+            alert("تم توزيع الأدوار على الجميع سرّاً! ابدأوا الأسئلة الآن لمعرفة مين الجاسوس! 🕵️‍♂️🔥");
+            showScreen('mainScreen');
+        }
+    }
+</script>
+
 </body>
 </html>
